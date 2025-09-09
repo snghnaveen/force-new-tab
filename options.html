@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Extension Preferences</title>
+    <style>
+        body {
+            font-family: "Segoe UI", Roboto, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f7f9fc;
+            color: #333;
+        }
+
+        header {
+            background: #0b74de;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-bottom: 4px solid #085bb1;
+        }
+
+        header h1 {
+            margin: 0 0 8px 0;
+            font-size: 1.6rem;
+        }
+
+        header p {
+            margin: 0;
+            font-size: 0.95rem;
+            opacity: 0.9;
+        }
+
+        main {
+            max-width: 600px;
+            margin: 30px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        label {
+            display: flex;
+            align-items: center;
+            margin-bottom: 16px;
+            font-size: 1rem;
+        }
+
+        label input {
+            margin-right: 10px;
+            transform: scale(1.2);
+        }
+
+        h3 {
+            margin-top: 20px;
+            font-size: 1.1rem;
+            border-left: 4px solid #0b74de;
+            padding-left: 8px;
+            color: #0b74de;
+        }
+
+        textarea {
+            width: 100%;
+            height: 100px;
+            margin-top: 8px;
+            margin-bottom: 16px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-family: monospace;
+            resize: vertical;
+        }
+
+        button {
+            display: inline-block;
+            padding: 8px 16px;
+            font-size: 1rem;
+            background: #0b74de;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background: #085bb1;
+        }
+
+        #status {
+            margin-left: 12px;
+            font-size: 0.9rem;
+            color: #28a745;
+        }
+
+        footer {
+            text-align: center;
+            margin: 40px 0 20px 0;
+            font-size: 0.85rem;
+            color: #555;
+        }
+
+        footer a {
+            color: #0b74de;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>Force Links to New Tab</h1>
+        <p>Customize how links are opened with this extension.</p>
+    </header>
+
+    <main>
+        <h2>Preferences</h2>
+
+        <label>
+            <input type="checkbox" id="openInBackground">
+            Open new tabs in background
+        </label>
+
+        <h3>Whitelist</h3>
+        <p style="font-size: 0.9rem; margin: 0 0 8px 0; color: #555;">
+            Enter one domain per line. If empty, all domains are allowed.
+        </p>
+        <textarea id="whitelist"></textarea>
+
+        <button id="save">Save</button>
+        <span id="status"></span>
+    </main>
+
+    <footer>
+        <p>Made with ❤️ · <a href="https://github.com/snghnaveen/force-new-tab" target="_blank">View on GitHub</a></p>
+    </footer>
+
+    <script src="options.js"></script>
+</body>
+
+</html>

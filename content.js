@@ -2,30 +2,42 @@
     let enabled = true;
     let ignoreKeyHeld = false;
 
+    // Cached preferences
+    let whitelist = [];
+
+    // === Storage syncing ===
+    // Initial load
+    chrome.storage.local.get({ enabled: true, whitelist: [] }, (res) => {
+        enabled = !!res.enabled;
+        whitelist = res.whitelist || [];
+    });
+
+    // Listen for changes
+    chrome.storage.onChanged.addListener((changes, area) => {
+        if (area === "local") {
+            if (changes.enabled) enabled = !!changes.enabled.newValue;
+            if (changes.whitelist) whitelist = changes.whitelist.newValue || [];
+        }
+    });
+
+    // Messages from background.js (e.g. toolbar toggle)
+    chrome.runtime.onMessage.addListener((msg) => {
+        if (msg?.type === "set-enabled") enabled = !!msg.enabled;
+    });
+
+    // === Key tracking (for Q override) ===
     addEventListener("keydown", (e) => {
         if (e.key.toLowerCase() === "q") {
             ignoreKeyHeld = true;
         }
     });
-
     addEventListener("keyup", (e) => {
         if (e.key.toLowerCase() === "q") {
             ignoreKeyHeld = false;
         }
     });
 
-
-    // Get initial state
-    chrome.storage.local.get({ enabled: true }, (res) => (enabled = !!res.enabled));
-
-    // Update when background toggles
-    chrome.storage.onChanged.addListener((changes, area) => {
-        if (area === "local" && changes.enabled) enabled = !!changes.enabled.newValue;
-    });
-    chrome.runtime.onMessage.addListener((msg) => {
-        if (msg?.type === "set-enabled") enabled = !!msg.enabled;
-    });
-
+    // === Helpers ===
     function findAnchorFromEvent(event) {
         // Prefer composedPath for shadow DOM
         const path = typeof event.composedPath === "function" ? event.composedPath() : [];
@@ -39,6 +51,14 @@
         return null;
     }
 
+    function domainFromUrl(url) {
+        try {
+            return new URL(url).hostname.replace(/^www\./, "");
+        } catch {
+            return null;
+        }
+    }
+
     function shouldIgnore(event, a) {
         if (!a) return true;
 
@@ -49,18 +69,24 @@
         if (event.button !== 0) return true;
         if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return true;
 
-        // Skip special schemes and downloads
         const url = a.href;
-        if (isYouTubeWithTimeParam(url)) return true;
-
-        // If "Q" key is pressed, ignore extension and let Chrome handle it
+        if (!url) return true;
+        if (isYouTubeWithParam(url)) return true;
         if (ignoreKeyHeld) return true;
 
-        if (!url) return true;
         const proto = new URL(url).protocol;
+                // Skip special schemes and downloads
+
         if (proto === "mailto:" || proto === "tel:") return true;
         if (a.hasAttribute("download")) return true;
 
+        // --- Whitelisted ---
+        const domain = domainFromUrl(url);
+        if (!domain) return true;
+
+        if (whitelist.length > 0 && !whitelist.includes(domain)) {
+            return true;
+        }
         return false;
     }
 
@@ -78,7 +104,7 @@
         e.stopPropagation();
         if (e.stopImmediatePropagation) e.stopImmediatePropagation();
 
-        // Ask background to open a new tab (more reliable than window.open from a content script)
+        // Ask background to open a new tab
         chrome.runtime.sendMessage({ type: "open-new-tab", url });
     }
 
@@ -86,23 +112,15 @@
     addEventListener("click", handleClick, { capture: true, passive: false });
 })();
 
-
-function isYouTubeWithTimeParam(url) {
+function isYouTubeWithParam(url) {
     try {
         const parsedUrl = new URL(url);
-
-        // Check if it's a YouTube base URL
-        const isYouTube = parsedUrl.hostname === 'www.youtube.com' || parsedUrl.hostname === 'youtube.com';
-
-        // ingore in csae of timestamp, ist
+        const isYouTube = parsedUrl.hostname === "www.youtube.com" || parsedUrl.hostname === "youtube.com";
         if (isYouTube) {
-            return parsedUrl.searchParams.has('t') || parsedUrl.searchParams.has('list')
+            return parsedUrl.searchParams.has("t") || parsedUrl.searchParams.has("list");
         }
-
         return false;
-    } catch (e) {
-        // Invalid URL
+    } catch {
         return false;
     }
 }
-

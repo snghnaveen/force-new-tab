@@ -1,5 +1,4 @@
 // background.js (MV3 service worker, module)
-
 const KEY = "enabled";
 
 async function getEnabled() {
@@ -22,10 +21,8 @@ async function setEnabled(enabled) {
 }
 
 async function updateBadge(enabled) {
-  // Short text works best on action badges
   await chrome.action.setBadgeText({ text: enabled ? "ON" : "" });
-  // Optional: tweak badge color (works in MV3)
-  await chrome.action.setBadgeBackgroundColor({ color: enabled ? "#0B74DE" : "#777" });
+  await chrome.action.setBadgeBackgroundColor({ color: enabled ? "#0bde27ff" : "#ffb9b9ff" });
 }
 
 // Initialize badge on install/startup
@@ -43,12 +40,12 @@ chrome.commands.onCommand.addListener(async (cmd) => {
 });
 
 // Handle requests from content script to open a new tab
-chrome.runtime.onMessage.addListener((msg, sender) => {
-  //  Open in background instead of set active
+chrome.runtime.onMessage.addListener(async (msg, sender) => {
   if (msg?.type === "open-new-tab" && typeof msg.url === "string") {
+    const { openInBackground = false } = await chrome.storage.local.get("openInBackground");
     chrome.tabs.create({
       url: msg.url,
-      active: true,
+      active: !openInBackground,
       index: sender.tab ? sender.tab.index + 1 : undefined,
       openerTabId: sender.tab?.id
     });

@@ -3,25 +3,28 @@
   "description": "When ON, every normal left-click on a link opens in a new tab. Toggle via Alt+Shift+W or toolbar click.",
   "version": "1.0.0",
   "manifest_version": 3,
-
-  "permissions": ["storage", "tabs"],
+  "permissions": [
+    "storage",
+    "tabs"
+  ],
   "action": {
     "default_title": "Force New Tab: click to toggle"
   },
-
   "background": {
     "service_worker": "background.js",
     "type": "module"
   },
-
   "content_scripts": [
     {
-      "matches": ["<all_urls>"],
-      "js": ["content.js"],
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "content.js"
+      ],
       "run_at": "document_start"
     }
   ],
-
   "commands": {
     "toggle-force-newtab": {
       "description": "Toggle Force New Tab",
@@ -30,5 +33,6 @@
         "mac": "Alt+Shift+W"
       }
     }
-  }
+  },
+  "options_page": "options.html"
 }
