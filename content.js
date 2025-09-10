@@ -62,31 +62,24 @@
     function shouldIgnore(event, a) {
         if (!a) return true;
 
-        const rawHref = a.getAttribute("href");
-        if (!rawHref || rawHref.startsWith("#")) return true; // same-page anchors
 
-        // Only intercept primary-button, unmodified clicks
-        if (event.button !== 0) return true;
-        if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return true;
+        if (isSamePageAnchor(a.getAttribute("href"))) return true;
+        
+        if (isModifiedOrNonPrimaryClick(event)) return true;
 
         const url = a.href;
-        if (!url) return true;
-        if (isYouTubeWithParam(url)) return true;
+        if (isMissingHref(url)) return true;
+
+        if (hasYouTubeTimestampOrListParam(url)) return true;
+
         if (ignoreKeyHeld) return true;
 
-        const proto = new URL(url).protocol;
-                // Skip special schemes and downloads
+        if (isSpecialOrDownloadLink(a, url)) return true;
 
-        if (proto === "mailto:" || proto === "tel:") return true;
-        if (a.hasAttribute("download")) return true;
-
-        // --- Whitelisted ---
         const domain = domainFromUrl(url);
         if (!domain) return true;
+        if (isDomainNotWhitelisted(domain, whitelist)) return true;
 
-        if (whitelist.length > 0 && !whitelist.includes(domain)) {
-            return true;
-        }
         return false;
     }
 
@@ -112,7 +105,43 @@
     addEventListener("click", handleClick, { capture: true, passive: false });
 })();
 
-function isYouTubeWithParam(url) {
+
+function isSamePageAnchor(href) {
+    return !href || href.startsWith("#");
+}
+
+function isMissingHref(url) {
+    return !url;
+}
+
+// Only intercept primary-button, unmodified clicks
+function isModifiedOrNonPrimaryClick(event) {
+    return (
+        event.button !== 0 ||
+        event.metaKey ||
+        event.ctrlKey ||
+        event.shiftKey ||
+        event.altKey
+    );
+}
+
+function isSpecialOrDownloadLink(a, url) {
+    try {
+        const proto = new URL(url).protocol;
+        if (proto === "mailto:" || proto === "tel:") return true;
+        if (a.hasAttribute("download")) return true;
+        return false;
+    } catch {
+        // If URL parsing fails, treat as special (fail-safe)
+        return true;
+    }
+}
+
+function isDomainNotWhitelisted(domain, whitelist) {
+    return whitelist.length > 0 && !whitelist.includes(domain);
+}
+
+function hasYouTubeTimestampOrListParam(url) {
     try {
         const parsedUrl = new URL(url);
         const isYouTube = parsedUrl.hostname === "www.youtube.com" || parsedUrl.hostname === "youtube.com";

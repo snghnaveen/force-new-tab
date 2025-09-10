@@ -21,7 +21,7 @@ async function setEnabled(enabled) {
 }
 
 async function updateBadge(enabled) {
-  await chrome.action.setBadgeText({ text: enabled ? "ON" : "" });
+  await chrome.action.setBadgeText({ text: enabled ? "ON" : "OFF" });
   await chrome.action.setBadgeBackgroundColor({ color: enabled ? "#0bde27ff" : "#ffb9b9ff" });
 }
 
