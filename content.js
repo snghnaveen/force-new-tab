@@ -62,23 +62,50 @@
     function shouldIgnore(event, a) {
         if (!a) return true;
 
+        console.log("Checking validation for link:", a.href);
+        console.log("Link element:", a);
+        console.log("Event:", event);
+        console.log("Current whitelist:", whitelist);
+        console.log("Current enabled state:", enabled);
+        console.log("Is override key held:", ignoreKeyHeld);
 
-        if (isSamePageAnchor(a.getAttribute("href"))) return true;
-        
-        if (isModifiedOrNonPrimaryClick(event)) return true;
+        if (isSamePageAnchor(a.getAttribute("href"))) {
+            console.log("Ignoring same-page anchor link");
+            return true;
+        }
+
+        if (isModifiedOrNonPrimaryClick(event)) {
+            console.log("Ignoring modified or non-primary click");
+            return true
+        };
 
         const url = a.href;
-        if (isMissingHref(url)) return true;
+        if (isMissingHref(url)) {
+            console.log("Ignoring missing href");
+            return true;
+        }
 
-        if (hasYouTubeTimestampOrListParam(url)) return true;
+        if (hasYouTubeTimestampOrListParam(url)) {
+            console.log("Ignoring YouTube link with t or list param");
+            return true
+        };
 
-        if (ignoreKeyHeld) return true;
+        if (ignoreKeyHeld) {
+            console.log("Ignoring because override key held");
+            return true
+        };
 
-        if (isSpecialOrDownloadLink(a, url)) return true;
+        if (isSpecialOrDownloadLink(a, url)) {
+            console.log("Ignoring special link (mailto/tel/download)");
+            return true
+        };
 
         const domain = domainFromUrl(url);
         if (!domain) return true;
-        if (isDomainNotWhitelisted(domain, whitelist)) return true;
+        if (isDomainWhitelisted(domain, whitelist)) {
+            console.log("Ignoring because domain not whitelisted");
+            return true
+        };
 
         return false;
     }
@@ -137,19 +164,40 @@ function isSpecialOrDownloadLink(a, url) {
     }
 }
 
-function isDomainNotWhitelisted(domain, whitelist) {
+function isDomainWhitelisted(domain, whitelist) {
     return whitelist.length > 0 && !whitelist.includes(domain);
 }
 
-function hasYouTubeTimestampOrListParam(url) {
+function hasYouTubeTimestampOrListParam(target) {
     try {
-        const parsedUrl = new URL(url);
-        const isYouTube = parsedUrl.hostname === "www.youtube.com" || parsedUrl.hostname === "youtube.com";
-        if (isYouTube) {
-            return parsedUrl.searchParams.has("t") || parsedUrl.searchParams.has("list");
+        const targetUrl = new URL(target);
+        const isTargetYouTubeLink = /(^|\.)youtube\.com$/.test(targetUrl.hostname.replace(/^www\./, ""));
+
+        if (!isTargetYouTubeLink) {
+            console.log("Target is not a YouTube link, ignoring YouTube timestamp or list check");
+            return false;
         }
-        return false;
+
+        const currentPageUrl = new URL(window.location.href);
+        const isCurrentPageYouTube = /(^|\.)youtube\.com$/.test(currentPageUrl.hostname.replace(/^www\./, ""));
+
+        if (isCurrentPageYouTube) {
+            if (targetUrl.searchParams.has("t")) {
+                console.log("Target link has t param, ignoring YouTube timestamp or list check");
+                return true;
+            }
+
+            if (currentPageUrl.searchParams.has("list")) {
+                const hasListQueryParam = targetUrl.searchParams.has("list")
+                console.log("Current page has list param, checking target for list param:", hasListQueryParam);
+                return hasListQueryParam;
+            }
+
+
+        }
+        return false
     } catch {
+        console.log("Error parsing URL, treating as non-YouTube link");
         return false;
     }
 }
