@@ -19,7 +19,11 @@
       "matches": [
         "<all_urls>"
       ],
+      "css": [
+        "toast/toast.css"
+      ],
       "js": [
+        "toast/toast.js",
         "content.js"
       ],
       "run_at": "document_start"

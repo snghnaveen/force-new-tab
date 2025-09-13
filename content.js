@@ -1,8 +1,7 @@
 (() => {
     let enabled = true;
     let ignoreKeyHeld = false;
-
-    // Cached preferences
+    let showToast = true;
     let whitelist = [];
 
     // === Storage syncing ===
@@ -10,6 +9,7 @@
     chrome.storage.local.get({ enabled: true, whitelist: [] }, (res) => {
         enabled = !!res.enabled;
         whitelist = res.whitelist || [];
+        showToast = res.showToast !== false; // default true
     });
 
     // Listen for changes
@@ -67,6 +67,7 @@
         console.log("Event:", event);
         console.log("Current whitelist:", whitelist);
         console.log("Current enabled state:", enabled);
+        console.log("Toast enabled:", showToast);
         console.log("Is override key held:", ignoreKeyHeld);
 
         if (isSamePageAnchor(a.getAttribute("href"))) {
@@ -123,6 +124,10 @@
         e.preventDefault();
         e.stopPropagation();
         if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+
+        if (showToast) {
+            toastMessage("opened in new tab", 4000);
+        }
 
         // Ask background to open a new tab
         chrome.runtime.sendMessage({ type: "open-new-tab", url });

@@ -1,0 +1,23 @@
+.force-new-tab-toast {
+  visibility: hidden;
+  min-width: 200px;
+  margin-left: -100px;
+  background-color: #323232;
+  color: #fff;
+  text-align: center;
+  border-radius: 4px;
+  padding: 12px 16px;
+  position: fixed;
+  z-index: 9999;
+  left: 50%;
+  bottom: 30px;
+  font-size: 14px;
+  opacity: 0;
+  transition: opacity 0.3s ease, bottom 0.3s ease;
+}
+
+.force-new-tab-toast.show {
+  visibility: visible;
+  opacity: 1;
+  bottom: 50px;
+}

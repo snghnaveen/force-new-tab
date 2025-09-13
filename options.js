@@ -15,6 +15,7 @@ function formatDomain(input) {
 
 async function saveOptions() {
     const openInBackground = document.getElementById("openInBackground").checked;
+    const showToast = document.getElementById("showToast").checked;
 
     const rawWhitelist = document.getElementById("whitelist").value
         .split("\n")
@@ -26,7 +27,7 @@ async function saveOptions() {
         .map(formatDomain)
         .filter(domain => domain !== null);
 
-    await chrome.storage.local.set({ openInBackground, whitelist: whitelistFiltered });
+    await chrome.storage.local.set({ openInBackground, showToast, whitelist: whitelistFiltered });
 
     const status = document.getElementById("status");
     status.textContent = "Options saved!";
@@ -34,10 +35,11 @@ async function saveOptions() {
 }
 
 async function restoreOptions() {
-    const { openInBackground = false, whitelist = [] } =
-        await chrome.storage.local.get(["openInBackground", "whitelist"]);
+    const { openInBackground = false, showToast = true, whitelist = [] } =
+        await chrome.storage.local.get(["openInBackground", "showToast", "whitelist"]);
 
     document.getElementById("openInBackground").checked = openInBackground;
+    document.getElementById("showToast").checked = showToast;
     document.getElementById("whitelist").value = whitelist.join("\n");
 }
 
