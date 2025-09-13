@@ -14,11 +14,11 @@ A Chromium-based browser extension (Chrome, Edge, Opera, etc.) that forces all n
 
 1. [Download](https://github.com/snghnaveen/force-new-tab/archive/refs/heads/main.zip) or clone this repository.
 2. Go to your browser's extensions page (works for Chromium-based browsers):
-    - Chrome: chrome://extensions
-    - Opera: opera://extensions
-    - Edge: edge://extensions
-3. Enable "Developer mode".
-4. Click "Load unpacked" and select this folder.
+    - Chrome: [chrome://extensions](chrome://extensions)
+    - Opera: [opera://extensions](opera://extensions)
+    - Edge: [edge://extensions](edge://extensions)
+3. Enable `Developer mode`.
+4. Click `Load unpacked` and select this folder.
 
 ## Options
 
