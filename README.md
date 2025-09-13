@@ -1,5 +1,5 @@
 # Force Links to New Tab (Toggle)
-A Chrome extension that forces all normal left-clicks on links to open in a new tab.
+A Chromium-based browser extension (Chrome, Edge, Opera, etc.) that forces all normal left-clicks on links to open in a new tab.
 
 ## Features / Usage
 
@@ -12,17 +12,18 @@ A Chrome extension that forces all normal left-clicks on links to open in a new 
 
 ## Installation
 
-1. Download or clone this repository.
-2. Go to `chrome://extensions` in your browser.
+1. [Download](https://github.com/snghnaveen/force-new-tab/archive/refs/heads/main.zip) or clone this repository.
+2. Go to your browser's extensions page (works for Chromium-based browsers):
+    - Chrome: chrome://extensions
+    - Opera: opera://extensions
+    - Edge: edge://extensions
 3. Enable "Developer mode".
 4. Click "Load unpacked" and select this folder.
-
 
 ## Options
 
 - **Open in background:** Checkbox to open new tabs without switching focus.
 - **Whitelist:** Enter one domain per line. If empty, all domains are affected.
-
 
 ### Screenshots
 
