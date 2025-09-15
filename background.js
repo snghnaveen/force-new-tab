@@ -14,9 +14,7 @@ async function setEnabled(enabled) {
   for (const tab of tabs) {
     try {
       chrome.tabs.sendMessage(tab.id, { type: "set-enabled", enabled });
-    } catch (_) {
-      // ignore tabs without our content script (e.g., chrome://, Web Store, etc.)
-    }
+    } catch (_) {}
   }
 }
 
@@ -25,8 +23,17 @@ async function updateBadge(enabled) {
   await chrome.action.setBadgeBackgroundColor({ color: enabled ? "#0bde27ff" : "#ffb9b9ff" });
 }
 
-// Initialize badge on install/startup
-chrome.runtime.onInstalled.addListener(async () => updateBadge(await getEnabled()));
+chrome.runtime.onInstalled.addListener(async () => {
+  await updateBadge(await getEnabled());
+
+  // Create context menu for right-click on links
+  chrome.contextMenus.create({
+    id: "open-link-in-this-tab",
+    title: "Open Link in This Tab",
+    contexts: ["link"]
+  });
+});
+
 chrome.runtime.onStartup.addListener(async () => updateBadge(await getEnabled()));
 
 // Toggle by clicking the toolbar icon
@@ -52,3 +59,9 @@ chrome.runtime.onMessage.addListener(async (msg, sender) => {
   }
 });
 
+// New context menu handler
+chrome.contextMenus.onClicked.addListener((info, tab) => {
+  if (info.menuItemId === "open-link-in-this-tab" && info.linkUrl) {
+    chrome.tabs.update(tab.id, { url: info.linkUrl });
+  }
+});

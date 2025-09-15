@@ -5,7 +5,8 @@
   "manifest_version": 3,
   "permissions": [
     "storage",
-    "tabs"
+    "tabs",
+    "contextMenus"
   ],
   "action": {
     "default_title": "Force New Tab: click to toggle"
