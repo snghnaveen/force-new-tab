@@ -1,14 +1,17 @@
 # Force Links to New Tab (Toggle)
-A Chromium-based browser extension (Chrome, Edge, Opera, etc.) that forces all normal left-clicks on links to open in a new tab.
+A lightweight Chromium extension (Chrome, Edge, Opera, etc.) that forces normal left-clicks on links to open in a new tab instead of the current one.
+Useful if you always want to keep your current page in place while exploring links.
 
 ## Features / Usage
 
-- **Force new tab:** All left-clicks on links open in a new tab (unless whitelisted or ignored).
-- **Toggle ON/OFF:** Use the toolbar icon or `Alt+Shift+W` / `Opt+Shift+W` to enable/disable.
-- **Whitelist:** Ingore specified domains (leave empty to force all).
-- **Open in background:** Optionally open new tabs in the background.
-- **YouTube exception:** Links with `t` (timed) or `list` (playlist) parameters are ignored.
-- **Keyboard override:** Hold `Q` to temporarily disable the extension for a click.
+- **Force new tab:** Every left-click on a link opens in a new tab (unless ignored or whitelisted).
+- **Toggle ON/OFF:** Click the toolbar icon or use the shortcut `Alt+Shift+W` / `Opt+Shift+W` to enable/disable.
+- **Context menu:** Right-click a link → `Open Link in This Tab`.
+- **Whitelist:** Exclude specific domains from being forced into new tabs.
+- **Background tabs:** Optionally open new tabs without switching focus.
+- **YouTube exception:** Ignores links with timestamp (`t`) or playlist (`list`) parameters.
+- **Keyboard override:** Hold `Q` to to bypass the extension for a single click.
+- **Toast notification** Small pop-up confirms when a link is opened (can be disabled).
 
 ## Installation
 
@@ -20,19 +23,15 @@ A Chromium-based browser extension (Chrome, Edge, Opera, etc.) that forces all n
 3. Enable `Developer mode`.
 4. Click `Load unpacked` and select this folder.
 
-## Options
+### Screens
+- ![alt text](screens/demo.gif)
 
-- **Open in background:** Checkbox to open new tabs without switching focus.
-- **Whitelist:** Enter one domain per line. If empty, all domains are affected.
-
-### Screenshots
-
-- ![alt text](screens/toogle_on.png)
----
-- ![alt text](screens/toogle_off.png)
+- ![alt text](screens/toogle.gif)
 ---
 - ![alt text](screens/option.png)
 ---
+- ![alt text](screens/context.png)
+
 
 ## License
 
