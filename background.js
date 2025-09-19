@@ -34,7 +34,7 @@ async function updateBadge(enabled) {
 async function notifyContentScripts(enabled) {
   const tabs = await chrome.tabs.query({});
   for (const tab of tabs) {
-    chrome.tabs.sendMessage(tab.id, { type: "set-enabled", enabled }).catch(() => {});
+    chrome.tabs.sendMessage(tab.id, { type: "set-enabled", enabled }).catch(() => { });
   }
 }
 
@@ -69,7 +69,16 @@ chrome.action.onClicked.addListener(async () => {
 
 chrome.commands.onCommand.addListener(async (cmd) => {
   if (cmd === "toggle-force-newtab") {
-    await setEnabled(!(await getEnabled()));
+    const newEnabled = !(await getEnabled());
+    await setEnabled(newEnabled);
+
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    if (tab?.id) {
+      chrome.tabs.sendMessage(tab.id, {
+        type: "show-toast",
+        message: `Force New Tab: ${newEnabled ? "ON" : "OFF"}`,
+      }).catch(() => { });
+    }
   }
 });
 

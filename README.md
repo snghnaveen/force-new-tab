@@ -9,9 +9,9 @@ Useful if you always want to keep your current page in place while exploring lin
 - **Context menu:** Right-click a link → `Open Link in This Tab`.
 - **Whitelist:** Exclude specific domains from being forced into new tabs.
 - **Background tabs:** Optionally open new tabs without switching focus.
-- **YouTube exception:** Ignores links with timestamp (`t`) or playlist (`list`) parameters.
-- **Keyboard override:** Hold `Q` to to bypass the extension for a single click.
-- **Toast notification** Small pop-up confirms when a link is opened (can be disabled).
+- **YouTube exception:** Option to ignore links with timestamp (`t`) or playlist (`list`) parameters.
+- **Keyboard override:** Hold `` ` `` (backtick) to to bypass the extension for a single click.
+- **Toast notification** Small toast message confirms when a link is opened (can be disabled).
 
 ## Installation
 

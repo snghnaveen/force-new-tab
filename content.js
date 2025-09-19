@@ -23,16 +23,24 @@
     });
 
     chrome.runtime.onMessage.addListener((msg) => {
-        if (msg?.type === "set-enabled") enabled = !!msg.enabled;
+        if (msg?.type === "set-enabled") {
+            enabled = !!msg.enabled;
+        }
+
+        if (msg?.type === "show-toast" &&
+            showToast &&
+            typeof toastMessage === "function") {
+            toastMessage(msg.message, 4000);
+        }
     });
 
     /* ---------------- Keyboard Handling ---------------- */
     addEventListener("keydown", (e) => {
-        if (e.key.toLowerCase() === "q") ignoreKeyHeld = true;
+        if (e.key.toLowerCase() === "`") ignoreKeyHeld = true;
     });
 
     addEventListener("keyup", (e) => {
-        if (e.key.toLowerCase() === "q") ignoreKeyHeld = false;
+        if (e.key.toLowerCase() === "`") ignoreKeyHeld = false;
     });
 
     /* ---------------- Helpers ---------------- */
