@@ -29,8 +29,6 @@ Useful if you always want to keep your current page in place while exploring lin
 ![alt text](screens/toogle.gif)
 ---
 ![alt text](screens/option.png)
----
-![alt text](screens/context.png)
 
 ## License
 
