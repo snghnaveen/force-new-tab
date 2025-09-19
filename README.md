@@ -24,14 +24,13 @@ Useful if you always want to keep your current page in place while exploring lin
 4. Click `Load unpacked` and select this folder.
 
 ### Screens
-- ![alt text](screens/demo.gif)
-
-- ![alt text](screens/toogle.gif)
+![alt text](screens/demo.gif)
 ---
-- ![alt text](screens/option.png)
+![alt text](screens/toogle.gif)
 ---
-- ![alt text](screens/context.png)
-
+![alt text](screens/option.png)
+---
+![alt text](screens/context.png)
 
 ## License
 
