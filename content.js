@@ -1,208 +1,142 @@
 (() => {
-    let enabled = true;
-    let ignoreKeyHeld = false;
-    let showToast = true;
-    let whitelist = [];
+  /* ---------------- State ---------------- */
+  let enabled = true;
+  let ignoreKeyHeld = false;
+  let showToast = true;
+  let whitelist = [];
 
-    // === Storage syncing ===
-    // Initial load
-    chrome.storage.local.get({ enabled: true, whitelist: [] }, (res) => {
-        enabled = !!res.enabled;
-        whitelist = res.whitelist || [];
-        showToast = res.showToast !== false; // default true
-    });
+  /* ---------------- Storage ---------------- */
+  chrome.storage.local.get({ enabled: true, whitelist: [], showToast: true }, (res) => {
+    enabled = !!res.enabled;
+    whitelist = res.whitelist || [];
+    showToast = res.showToast !== false;
+  });
 
-    // Listen for changes
-    chrome.storage.onChanged.addListener((changes, area) => {
-        if (area === "local") {
-            if (changes.enabled) enabled = !!changes.enabled.newValue;
-            if (changes.whitelist) whitelist = changes.whitelist.newValue || [];
-        }
-    });
+  chrome.storage.onChanged.addListener((changes, area) => {
+    if (area !== "local") return;
 
-    // Messages from background.js (e.g. toolbar toggle)
-    chrome.runtime.onMessage.addListener((msg) => {
-        if (msg?.type === "set-enabled") enabled = !!msg.enabled;
-    });
+    if (changes.enabled) enabled = !!changes.enabled.newValue;
+    if (changes.whitelist) whitelist = changes.whitelist.newValue || [];
+    if (changes.showToast) showToast = changes.showToast.newValue !== false;
+  });
 
-    // === Key tracking (for Q override) ===
-    addEventListener("keydown", (e) => {
-        if (e.key.toLowerCase() === "q") {
-            ignoreKeyHeld = true;
-        }
-    });
-    addEventListener("keyup", (e) => {
-        if (e.key.toLowerCase() === "q") {
-            ignoreKeyHeld = false;
-        }
-    });
+  chrome.runtime.onMessage.addListener((msg) => {
+    if (msg?.type === "set-enabled") enabled = !!msg.enabled;
+  });
 
-    // === Helpers ===
-    function findAnchorFromEvent(event) {
-        // Prefer composedPath for shadow DOM
-        const path = typeof event.composedPath === "function" ? event.composedPath() : [];
-        for (const el of path) {
-            if (el && el.tagName === "A" && el.href) return el;
-        }
-        // Fallback
-        if (event.target && event.target.closest) {
-            return event.target.closest("a[href]");
-        }
-        return null;
+  /* ---------------- Keyboard Handling ---------------- */
+  addEventListener("keydown", (e) => {
+    if (e.key.toLowerCase() === "q") ignoreKeyHeld = true;
+  });
+
+  addEventListener("keyup", (e) => {
+    if (e.key.toLowerCase() === "q") ignoreKeyHeld = false;
+  });
+
+  /* ---------------- Helpers ---------------- */
+  function findAnchorFromEvent(event) {
+    const path = typeof event.composedPath === "function" ? event.composedPath() : [];
+    for (const el of path) {
+      if (el?.tagName === "A" && el.href) return el;
     }
+    return event.target?.closest?.("a[href]") ?? null;
+  }
 
-    function domainFromUrl(url) {
-        try {
-            return new URL(url).hostname.replace(/^www\./, "");
-        } catch {
-            return null;
-        }
+  function domainFromUrl(url) {
+    try {
+      return new URL(url).hostname.replace(/^www\./, "");
+    } catch {
+      return null;
     }
+  }
 
-    function shouldIgnore(event, a) {
-        if (!a) return true;
+  const isSamePageAnchor = (href) => !href || href.startsWith("#");
+  const isMissingHref = (url) => !url;
 
-        console.log("Checking validation for link:", a.href);
-        console.log("Link element:", a);
-        console.log("Event:", event);
-        console.log("Current whitelist:", whitelist);
-        console.log("Current enabled state:", enabled);
-        console.log("Toast enabled:", showToast);
-        console.log("Is override key held:", ignoreKeyHeld);
-
-        if (isSamePageAnchor(a.getAttribute("href"))) {
-            console.log("Ignoring same-page anchor link");
-            return true;
-        }
-
-        if (isModifiedOrNonPrimaryClick(event)) {
-            console.log("Ignoring modified or non-primary click");
-            return true
-        };
-
-        const url = a.href;
-        if (isMissingHref(url)) {
-            console.log("Ignoring missing href");
-            return true;
-        }
-
-        if (hasYouTubeTimestampOrListParam(url)) {
-            console.log("Ignoring YouTube link with t or list param");
-            return true
-        };
-
-        if (ignoreKeyHeld) {
-            console.log("Ignoring because override key held");
-            return true
-        };
-
-        if (isSpecialOrDownloadLink(a, url)) {
-            console.log("Ignoring special link (mailto/tel/download)");
-            return true
-        };
-
-        const domain = domainFromUrl(url);
-        if (!domain) return true;
-        if (isDomainWhitelisted(domain, whitelist)) {
-            console.log("Ignoring because domain not whitelisted");
-            return true
-        };
-
-        return false;
-    }
-
-    function handleClick(e) {
-        if (!enabled) return;
-        if (e.defaultPrevented) return;
-
-        const a = findAnchorFromEvent(e);
-        if (shouldIgnore(e, a)) return;
-
-        const url = a.href;
-
-        // Stop the page from handling the click
-        e.preventDefault();
-        e.stopPropagation();
-        if (e.stopImmediatePropagation) e.stopImmediatePropagation();
-
-        if (showToast) {
-            toastMessage("opened in new tab", 4000);
-        }
-
-        // Ask background to open a new tab
-        chrome.runtime.sendMessage({ type: "open-new-tab", url });
-    }
-
-    // Capture early, not passive, so we can preventDefault
-    addEventListener("click", handleClick, { capture: true, passive: false });
-})();
-
-
-function isSamePageAnchor(href) {
-    return !href || href.startsWith("#");
-}
-
-function isMissingHref(url) {
-    return !url;
-}
-
-// Only intercept primary-button, unmodified clicks
-function isModifiedOrNonPrimaryClick(event) {
+  function isModifiedOrNonPrimaryClick(event) {
     return (
-        event.button !== 0 ||
-        event.metaKey ||
-        event.ctrlKey ||
-        event.shiftKey ||
-        event.altKey
+      event.button !== 0 ||
+      event.metaKey ||
+      event.ctrlKey ||
+      event.shiftKey ||
+      event.altKey
     );
-}
+  }
 
-function isSpecialOrDownloadLink(a, url) {
+  function isSpecialOrDownloadLink(anchor, url) {
     try {
-        const proto = new URL(url).protocol;
-        if (proto === "mailto:" || proto === "tel:") return true;
-        if (a.hasAttribute("download")) return true;
-        return false;
+      const proto = new URL(url).protocol;
+      return proto === "mailto:" || proto === "tel:" || anchor.hasAttribute("download");
     } catch {
-        // If URL parsing fails, treat as special (fail-safe)
-        return true;
+      return true; // fail-safe: treat as special if parsing fails
     }
-}
+  }
 
-function isDomainWhitelisted(domain, whitelist) {
+  function isDomainBlocked(domain, whitelist) {
     return whitelist.length > 0 && !whitelist.includes(domain);
-}
+  }
 
-function hasYouTubeTimestampOrListParam(target) {
+  function hasYouTubeTimestampOrListParam(targetUrlString) {
     try {
-        const targetUrl = new URL(target);
-        const isTargetYouTubeLink = /(^|\.)youtube\.com$/.test(targetUrl.hostname.replace(/^www\./, ""));
+      const targetUrl = new URL(targetUrlString);
+      const isYouTube = /(^|\.)youtube\.com$/.test(targetUrl.hostname.replace(/^www\./, ""));
+      if (!isYouTube) return false;
 
-        if (!isTargetYouTubeLink) {
-            console.log("Target is not a YouTube link, ignoring YouTube timestamp or list check");
-            return false;
-        }
+      const currentUrl = new URL(window.location.href);
+      const isCurrentYouTube = /(^|\.)youtube\.com$/.test(currentUrl.hostname.replace(/^www\./, ""));
 
-        const currentPageUrl = new URL(window.location.href);
-        const isCurrentPageYouTube = /(^|\.)youtube\.com$/.test(currentPageUrl.hostname.replace(/^www\./, ""));
+      if (!isCurrentYouTube) return false;
 
-        if (isCurrentPageYouTube) {
-            if (targetUrl.searchParams.has("t")) {
-                console.log("Target link has t param, ignoring YouTube timestamp or list check");
-                return true;
-            }
+      if (targetUrl.searchParams.has("t")) return true;
 
-            if (currentPageUrl.searchParams.has("list")) {
-                const hasListQueryParam = targetUrl.searchParams.has("list")
-                console.log("Current page has list param, checking target for list param:", hasListQueryParam);
-                return hasListQueryParam;
-            }
+      if (currentUrl.searchParams.has("list")) {
+        return targetUrl.searchParams.has("list");
+      }
 
-
-        }
-        return false
+      return false;
     } catch {
-        console.log("Error parsing URL, treating as non-YouTube link");
-        return false;
+      return false;
     }
-}
+  }
+
+  function shouldIgnore(event, anchor) {
+    if (!anchor) return true;
+    const href = anchor.getAttribute("href");
+
+    if (isSamePageAnchor(href)) return true;
+    if (isModifiedOrNonPrimaryClick(event)) return true;
+
+    const url = anchor.href;
+    if (isMissingHref(url)) return true;
+    if (hasYouTubeTimestampOrListParam(url)) return true;
+    if (ignoreKeyHeld) return true;
+    if (isSpecialOrDownloadLink(anchor, url)) return true;
+
+    const domain = domainFromUrl(url);
+    if (!domain) return true;
+    if (isDomainBlocked(domain, whitelist)) return true;
+
+    return false;
+  }
+
+  /* ---------------- Click Handling ---------------- */
+  function handleClick(event) {
+    if (!enabled || event.defaultPrevented) return;
+
+    const anchor = findAnchorFromEvent(event);
+    if (shouldIgnore(event, anchor)) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation?.();
+
+    if (showToast && typeof toastMessage === "function") {
+      toastMessage("opened in new tab", 4000);
+    }
+
+    chrome.runtime.sendMessage({ type: "open-new-tab", url: anchor.href });
+  }
+
+  // Capture early, not passive, so we can preventDefault
+  addEventListener("click", handleClick, { capture: true, passive: false });
+})();

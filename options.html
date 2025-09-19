@@ -11,18 +11,19 @@
             padding: 0;
             background: #f7f9fc;
             color: #333;
+            line-height: 1.5;
         }
 
         header {
             background: #0b74de;
-            color: white;
+            color: #fff;
             padding: 20px;
             text-align: center;
             border-bottom: 4px solid #085bb1;
         }
 
         header h1 {
-            margin: 0 0 8px 0;
+            margin: 0 0 8px;
             font-size: 1.6rem;
         }
 
@@ -36,9 +37,15 @@
             max-width: 600px;
             margin: 30px auto;
             padding: 20px;
-            background: white;
+            background: #fff;
             border-radius: 12px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        h2 {
+            margin-top: 0;
+            font-size: 1.3rem;
+            color: #222;
         }
 
         label {
@@ -46,6 +53,7 @@
             align-items: center;
             margin-bottom: 16px;
             font-size: 1rem;
+            cursor: pointer;
         }
 
         label input {
@@ -54,19 +62,24 @@
         }
 
         h3 {
-            margin-top: 20px;
+            margin: 20px 0 8px;
             font-size: 1.1rem;
             border-left: 4px solid #0b74de;
             padding-left: 8px;
             color: #0b74de;
         }
 
+        .note {
+            font-size: 0.9rem;
+            margin: 0 0 8px;
+            color: #555;
+        }
+
         textarea {
-            width: 100%;
+            width: 96%;
             height: 100px;
-            margin-top: 8px;
-            margin-bottom: 16px;
             padding: 10px;
+            margin-bottom: 16px;
             border: 1px solid #ccc;
             border-radius: 6px;
             font-family: monospace;
@@ -74,15 +87,14 @@
         }
 
         button {
-            display: inline-block;
             padding: 8px 16px;
             font-size: 1rem;
             background: #0b74de;
-            color: white;
+            color: #fff;
             border: none;
             border-radius: 6px;
             cursor: pointer;
-            transition: background 0.2s;
+            transition: background 0.2s ease-in-out;
         }
 
         button:hover {
@@ -97,7 +109,7 @@
 
         footer {
             text-align: center;
-            margin: 40px 0 20px 0;
+            margin: 40px 0 20px;
             font-size: 0.85rem;
             color: #555;
         }
@@ -127,23 +139,27 @@
             <input type="checkbox" id="openInBackground">
             Open new tabs in background
         </label>
+
         <label>
             <input type="checkbox" id="showToast">
             Show toast notification on link open
         </label>
 
         <h3>Whitelist</h3>
-        <p style="font-size: 0.9rem; margin: 0 0 8px 0; color: #555;">
-            Enter one domain per line. If empty, all domains are allowed.
-        </p>
-        <textarea id="whitelist"></textarea>
+        <p class="note">Enter one domain per line. If empty, all domains are allowed.</p>
+        <textarea id="whitelist" aria-label="Whitelist domains"></textarea>
 
         <button id="save">Save</button>
-        <span id="status"></span>
+        <span id="status" role="status" aria-live="polite"></span>
     </main>
 
     <footer>
-        <p>Made with ❤️ · <a href="https://github.com/snghnaveen/force-new-tab" target="_blank">View on GitHub</a></p>
+        <p>
+            Made with ❤️ ·
+            <a href="https://github.com/snghnaveen/force-new-tab" target="_blank" rel="noopener noreferrer">
+                View on GitHub
+            </a>
+        </p>
     </footer>
 
     <script src="options.js"></script>

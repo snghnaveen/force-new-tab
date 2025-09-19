@@ -1,45 +1,51 @@
+/* ---------------- Event Listeners ---------------- */
 document.addEventListener("DOMContentLoaded", restoreOptions);
 document.getElementById("save").addEventListener("click", saveOptions);
 
+/* ---------------- Helpers ---------------- */
 function formatDomain(input) {
-    try {
-        const url = input.startsWith("http://") || input.startsWith("https://")
-            ? input
-            : `https://${input}`;
-        const hostname = new URL(url).hostname;
-        return hostname.replace(/^www\./, "").toLowerCase();
-    } catch {
-        return null;
-    }
+  try {
+    const normalized = input.startsWith("http://") || input.startsWith("https://")
+      ? input
+      : `https://${input}`;
+    return new URL(normalized).hostname.replace(/^www\./, "").toLowerCase();
+  } catch {
+    return null; // invalid input
+  }
 }
 
+function showStatusMessage(message, duration = 2000) {
+  const statusEl = document.getElementById("status");
+  statusEl.textContent = message;
+  setTimeout(() => (statusEl.textContent = ""), duration);
+}
+
+/* ---------------- Save Options ---------------- */
 async function saveOptions() {
-    const openInBackground = document.getElementById("openInBackground").checked;
-    const showToast = document.getElementById("showToast").checked;
+  const openInBackground = document.getElementById("openInBackground").checked;
+  const showToast = document.getElementById("showToast").checked;
 
-    const rawWhitelist = document.getElementById("whitelist").value
-        .split("\n")
-        .map(s => s.trim())
-        .filter(Boolean);
+  const rawWhitelist = document
+    .getElementById("whitelist")
+    .value.split("\n")
+    .map((s) => s.trim())
+    .filter(Boolean);
 
-    // Format each domain and filter out invalid entries (nulls)
-    const whitelistFiltered = rawWhitelist
-        .map(formatDomain)
-        .filter(domain => domain !== null);
+  const whitelist = rawWhitelist.map(formatDomain).filter(Boolean);
 
-    await chrome.storage.local.set({ openInBackground, showToast, whitelist: whitelistFiltered });
-
-    const status = document.getElementById("status");
-    status.textContent = "Options saved!";
-    setTimeout(() => (status.textContent = ""), 2000);
+  await chrome.storage.local.set({ openInBackground, showToast, whitelist });
+  showStatusMessage("Options saved!");
 }
 
+/* ---------------- Restore Options ---------------- */
 async function restoreOptions() {
-    const { openInBackground = false, showToast = true, whitelist = [] } =
-        await chrome.storage.local.get(["openInBackground", "showToast", "whitelist"]);
+  const {
+    openInBackground = false,
+    showToast = true,
+    whitelist = [],
+  } = await chrome.storage.local.get(["openInBackground", "showToast", "whitelist"]);
 
-    document.getElementById("openInBackground").checked = openInBackground;
-    document.getElementById("showToast").checked = showToast;
-    document.getElementById("whitelist").value = whitelist.join("\n");
+  document.getElementById("openInBackground").checked = openInBackground;
+  document.getElementById("showToast").checked = showToast;
+  document.getElementById("whitelist").value = whitelist.join("\n");
 }
-
